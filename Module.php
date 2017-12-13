@@ -31,7 +31,7 @@ use  \array_key_exists;
  */
 class Module extends \yii\base\Module
 {
-    const VERSION = '2.0.4';
+    const VERSION = '2.0.5';
 
     /**
      * @var array Model's map
@@ -159,27 +159,27 @@ class Module extends \yii\base\Module
      *
      * @return array
      */
-    public function registerTranslations()
-    {
-        if(!isset(Yii::$app->get('i18n')->translations['modules/oauth2/*'])) {
-            Yii::$app->get('i18n')->translations['modules/oauth2/*'] = [
-                'class'    => PhpMessageSource::className(),
-                'basePath' => __DIR__ . '/messages',
-            ];
-        }
-    }
+    // public function registerTranslations()
+    // {
+    //     if(!isset(Yii::$app->get('i18n')->translations['modules/oauth2/*'])) {
+    //         Yii::$app->get('i18n')->translations['modules/oauth2/*'] = [
+    //             'class'    => PhpMessageSource::className(),
+    //             'basePath' => __DIR__ . '/messages',
+    //         ];
+    //     }
+    // }
 
     /**
      * Translate module message
-     * 
+     *
      * @param string $category
      * @param string $message
      * @param array $params
      * @param string $language
      * @return string
      */
-    public static function t($category, $message, $params = [], $language = null)
-    {
-        return Yii::t('modules/oauth2/' . $category, $message, $params, $language);
-    }
+    // public static function t($category, $message, $params = [], $language = null)
+    // {
+    //     return Yii::t('modules/oauth2/' . $category, $message, $params, $language);
+    // }
 }

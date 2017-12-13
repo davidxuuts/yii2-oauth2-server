@@ -13,13 +13,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist davidxuuts/yii2-oauth2-server "*"
+php composer.phar require --prefer-dist davidxu/yii2-oauth2-server "*"
 ```
 
 or add
 
 ```json
-"davidxuuts/yii2-oauth2-server": "~2.0"
+"davidxu/yii2-oauth2-server": "~2.0"
 ```
 
 to the require section of your composer.json.
@@ -57,10 +57,10 @@ Additional OAuth2 Flags:
 
 ```allowImplicit``` - Flag that switch that controller should allow the "implicit" grant type
 
-The next step your shold run migration
+The next step your should run migration
 
 ```php
-yii migrate --migrationPath=@vendor/filsh/yii2-oauth2-server/migrations
+yii migrate --migrationPath=@vendor/davidxu/yii2-oauth2-server/migrations
 ```
 
 this migration create the oauth2 database scheme and insert test user credentials ```testclient:testpass``` for ```http://fake/```
