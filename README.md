@@ -3,6 +3,8 @@ yii2-oauth2-server
 
 A wrapper for implementing an OAuth2 Server(https://github.com/bshaffer/oauth2-server-php)
 
+This is a fork of https://github.com/Filsh/yii2-oauth2-server. There is no guarantee that the two will remain compatible so check out things to see if there is anything broke while transiting.
+
 Installation
 ------------
 
@@ -11,23 +13,16 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist filsh/yii2-oauth2-server "*"
+php composer.phar require --prefer-dist davidxuuts/yii2-oauth2-server "*"
 ```
 
 or add
 
 ```json
-"filsh/yii2-oauth2-server": "~2.0"
+"davidxuuts/yii2-oauth2-server": "~2.0"
 ```
 
 to the require section of your composer.json.
-
-To use the latest features (Like JWT tokens), you need to use 2.0.1 branch.
-Edit your compose.json and add
-
-```json
-"filsh/yii2-oauth2-server": "2.0.1.x-dev"
-```
 
 To use this extension,  simply add the following code in your application configuration:
 
@@ -135,14 +130,14 @@ class SiteController extends Controller
     {
         if (Yii::$app->getUser()->getIsGuest())
             return $this->redirect('login');
-    
+
         /** @var $module \filsh\yii2\oauth2server\Module */
         $module = Yii::$app->getModule('oauth2');
         $response = $module->handleAuthorizeRequest(!Yii::$app->getUser()->getIsGuest(), Yii::$app->getUser()->getId());
-    
+
         /** @var object $response \OAuth2\Response */
         Yii::$app->getResponse()->format = \yii\web\Response::FORMAT_JSON;
-    
+
         return $response->getParameters();
     }
 }
@@ -158,7 +153,7 @@ With redirect response:
 
 `https://fake/cb#access_token=2YotnFZFEjr1zCsicMWpAA&state=xyz&token_type=bearer&expires_in=3600`
 ### JWT Tokens (2.0.1 branch only)
-If you want to get Json Web Token (JWT) instead of convetional token, you will need to set `'useJwtToken' => true` in module and then define two more configurations: 
+If you want to get Json Web Token (JWT) instead of convetional token, you will need to set `'useJwtToken' => true` in module and then define two more configurations:
 `'public_key' => 'app\storage\PublicKeyStorage'` which is the class that implements [PublickKeyInterface](https://github.com/bshaffer/oauth2-server-php/blob/develop/src/OAuth2/Storage/PublicKeyInterface.php) and `'access_token' => 'OAuth2\Storage\JwtAccessToken'` which implements [JwtAccessTokenInterface.php](https://github.com/bshaffer/oauth2-server-php/blob/develop/src/OAuth2/Storage/JwtAccessTokenInterface.php)
 
 For Oauth2 base library provides the default [access_token](https://github.com/bshaffer/oauth2-server-php/blob/develop/src/OAuth2/Storage/JwtAccessToken.php) which works great except. Just use it and everything will be fine.
@@ -173,19 +168,19 @@ class PublicKeyStorage implements \OAuth2\Storage\PublicKeyInterface{
 
 
     private $pbk =  null;
-    private $pvk =  null; 
-    
+    private $pvk =  null;
+
     public function __construct()
     {
         $this->pvk =  file_get_contents('privkey.pem', true);
-        $this->pbk =  file_get_contents('pubkey.pem', true); 
+        $this->pbk =  file_get_contents('pubkey.pem', true);
     }
 
-    public function getPublicKey($client_id = null){ 
+    public function getPublicKey($client_id = null){
         return  $this->pbk;
     }
 
-    public function getPrivateKey($client_id = null){ 
+    public function getPrivateKey($client_id = null){
         return  $this->pvk;
     }
 
@@ -195,7 +190,7 @@ class PublicKeyStorage implements \OAuth2\Storage\PublicKeyInterface{
 
 }
 
-``` 
+```
 
 
 For more, see https://github.com/bshaffer/oauth2-server-php
