@@ -3,6 +3,8 @@ yii2-oauth2-server
 
 A wrapper for implementing an OAuth2 Server(https://github.com/bshaffer/oauth2-server-php)
 
+This is a fork of https://github.com/Filsh/yii2-oauth2-server. There is no guarantee that the two will remain compatible so check out things to see if there is anything broke while transiting.
+
 Installation
 ------------
 
@@ -11,13 +13,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist filsh/yii2-oauth2-server "*"
+php composer.phar require --prefer-dist davidxu/yii2-oauth2-server "*"
 ```
 
 or add
 
 ```json
-"filsh/yii2-oauth2-server": "~2.0"
+"davidxu/yii2-oauth2-server": "~2.0"
 ```
 
 to the require section of your composer.json.
