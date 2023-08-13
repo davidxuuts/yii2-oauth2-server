@@ -8,7 +8,7 @@
  * Client = andere applicatie die connectie maakt met ons als oauth2 server
  */
 
-namespace NIOLAB\oauth2\models;
+namespace davidxu\oauth2\models;
 
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use yii\db\ActiveRecord;
@@ -22,12 +22,22 @@ use yii\db\ActiveRecord;
  */
 class Scope extends ActiveRecord implements ScopeEntityInterface {
 
+    protected ?string $scopeTable = '{{%oauth_scope}}';
+
+    public function init()
+    {
+        parent::init();
+        if (Yii::$app->params['davidxu.oauth2.table']) {
+            $this->scopeTable = Yii::$app->params['davidxu.oauth2.table']['authScopeTable'] ?? $this->scopeTable;
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return '{{%oauth_scope}}';
+        return $this->scopeTable;
     }
 
 
@@ -47,7 +57,7 @@ class Scope extends ActiveRecord implements ScopeEntityInterface {
      * which is a value of any type other than a resource.
      * @since 5.4.0
      */
-    public function jsonSerialize() {
+    public function jsonSerialize():mixed {
         return $this->getIdentifier();
     }
 

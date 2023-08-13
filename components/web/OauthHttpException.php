@@ -1,14 +1,10 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Harry_000
- * Date: 17-5-2018
- * Time: 12:13
  *
  * Based on original by chervand (Source: https://github.com/chervand/yii2-oauth2-server)
  */
 
-namespace NIOLAB\oauth2\components\web;
+namespace davidxu\oauth2\components\web;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
 use yii\web\HttpException;

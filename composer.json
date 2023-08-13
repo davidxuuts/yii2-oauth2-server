@@ -1,5 +1,5 @@
 {
-  "name": "niolab/yii2-oauth2-server",
+  "name": "davidxu/yii2-oauth2-server",
   "description": "Oauth2 server",
   "type": "yii2-extension",
   "keywords": [
@@ -17,16 +17,21 @@
       "name": "Harry Doddema",
       "email": "harrydoddema@promocat.nl",
       "role": "Developer"
+    },
+    {
+      "name": "David Xu",
+      "email": "david.xu.uts@163.com",
+      "role": "Developer"
     }
   ],
   "require": {
     "yiisoft/yii2": "~2.0.6",
-    "league/oauth2-server": "~8.0",
-    "guzzlehttp/guzzle": "~7.0"
+    "league/oauth2-server": "*",
+    "guzzlehttp/guzzle": "*"
   },
   "autoload": {
     "psr-4": {
-      "NIOLAB\\oauth2\\": ""
+      "davidxu\\oauth2\\": ""
     }
   }
 }

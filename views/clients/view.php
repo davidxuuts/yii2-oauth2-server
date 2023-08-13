@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
-/* @var $model NIOLAB\oauth2\models\Client */
+/* @var $model davidxu\oauth2\models\Client */
 
 $this->title = $model->name;
 $this->params['subtitle'] = "View oAuth2";

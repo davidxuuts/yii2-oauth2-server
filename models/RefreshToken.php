@@ -1,6 +1,6 @@
 <?php
 
-namespace NIOLAB\oauth2\models;
+namespace davidxu\oauth2\models;
 
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
@@ -9,11 +9,6 @@ use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 
 /**
- * Created by PhpStorm.
- * User: Harry
- * Date: 15-5-2018
- * Time: 16:46
- *
  * Client = andere applicatie die connectie maakt met ons als oauth2 server
  * This is the model class for table "oauth_refresh_token".
  *
@@ -29,12 +24,22 @@ use yii\helpers\ArrayHelper;
 class RefreshToken extends ActiveRecord implements RefreshTokenEntityInterface {
 
 
+    protected ?string $refreshTokenTable = '{{%oauth_refresh_token}}';
+
+    public function init()
+    {
+        parent::init();
+        if (Yii::$app->params['davidxu.oauth2.table']) {
+            $this->refreshTokenTable = Yii::$app->params['davidxu.oauth2.table']['authRefreshTokenTable'] ?? $this->refreshTokenTable;
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return '{{%oauth_refresh_token}}';
+        return $this->refreshTokenTable;
     }
 
     public function behaviors() {

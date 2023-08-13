@@ -1,15 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Harry
- * Date: 15-5-2018
- * Time: 16:21
- */
-
-namespace NIOLAB\oauth2\components\repositories;
+namespace davidxu\oauth2\components\repositories;
 
 use League\OAuth2\Server\Entities\ClientEntityInterface;
-use NIOLAB\oauth2\models\Client;
+use davidxu\oauth2\models\Client;
 
 class ClientRepository implements \League\OAuth2\Server\Repositories\ClientRepositoryInterface {
 

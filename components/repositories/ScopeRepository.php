@@ -1,17 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Harry
- * Date: 15-5-2018
- * Time: 16:21
- */
-
-namespace NIOLAB\oauth2\components\repositories;
+namespace davidxu\oauth2\components\repositories;
 
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
-use NIOLAB\oauth2\models\Client;
-use NIOLAB\oauth2\models\Scope;
+use davidxu\oauth2\models\Client;
+use davidxu\oauth2\models\Scope;
 use yii\db\ActiveQuery;
 
 class ScopeRepository implements \League\OAuth2\Server\Repositories\ScopeRepositoryInterface {

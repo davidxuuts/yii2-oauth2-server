@@ -1,11 +1,11 @@
 <?php
 
-namespace NIOLAB\oauth2\controllers;
+namespace davidxu\oauth2\controllers;
 
-use NIOLAB\oauth2\Module;
+use davidxu\oauth2\Module;
 use Yii;
-use NIOLAB\oauth2\models\Client;
-use NIOLAB\oauth2\models\ClientSearch;
+use davidxu\oauth2\models\Client;
+use davidxu\oauth2\models\ClientSearch;
 use yii\base\Security;
 use yii\helpers\StringHelper;
 use yii\web\Controller;

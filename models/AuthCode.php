@@ -1,14 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Harry
- * Date: 15-5-2018
- * Time: 16:46
- *
- * Client = andere applicatie die connectie maakt met ons als oauth2 server
- */
-
-namespace NIOLAB\oauth2\models;
+namespace davidxu\oauth2\models;
 
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
@@ -46,12 +37,27 @@ class AuthCode extends ActiveRecord implements AuthCodeEntityInterface {
     protected $scopes = [];
 
     protected $redirectUri;
+    
+    protected ?string $authCodeTable = '{{%oauth_auth_code}}';
+    protected ?string $authCodeScopeTable = '{{%oauth_auth_code_scope}}';
+
+    public function init()
+    {
+        parent::init();
+        if (Yii::$app->params['davidxu.oauth2.table']) {
+            $this->authCodeTable = Yii::$app->params['davidxu.oauth2.table']['authAuthCodeTable'] ?? $this->authCodeTable;
+        }
+
+        if (Yii::$app->params['davidxu.oauth2.table']) {
+            $this->authCodeScopeTable = Yii::$app->params['davidxu.oauth2.table']['authCodeScopeTable'] ?? $this->authCodeScopeTable;
+        }
+    }
 
     /**
      * {@inheritdoc}
      */
     public static function tableName() {
-        return '{{%oauth_auth_code}}';
+        return $this->authCodeTable;
     }
 
     public function behaviors() {
@@ -83,7 +89,7 @@ class AuthCode extends ActiveRecord implements AuthCodeEntityInterface {
      * @throws \yii\base\InvalidConfigException
      */
     public function getRelatedScopes() {
-        return $this->hasMany(Scope::class, ['id' => 'scope_id'])->viaTable('oauth_auth_code_scope', ['auth_code_id' => 'id']);
+        return $this->hasMany(Scope::class, ['id' => 'scope_id'])->viaTable($this->authCodeScopeTable, ['auth_code_id' => 'id']);
     }
 
 

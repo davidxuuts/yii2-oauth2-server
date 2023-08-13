@@ -1,6 +1,7 @@
 Extension for Yii2 providing an oAuth 2 server
 ================================
 
+Forked from [https://github.com/davidxu/yii2-oauth2-server](https://github.com/davidxu/yii2-oauth2-server)
 Uses parts of [https://github.com/samdark/yii2-league-oauth2-server](https://github.com/samdark/yii2-league-oauth2-server)
 
 Also inspired by [https://github.com/chervand/yii2-oauth2-server](https://github.com/chervand/yii2-oauth2-server)
@@ -9,7 +10,7 @@ Also inspired by [https://github.com/chervand/yii2-oauth2-server](https://github
 Add this to your `composer.json`:
 ```json
 
-"niolab/yii2-oauth2-server": "~1.0"
+"davidxu/yii2-oauth2-server": "*"
 
 ```
 
@@ -24,7 +25,7 @@ You need a few things:
   - `League\OAuth2\Server\Repositories\UserRepositoryInterface`
       - Make sure to *validate* the user in `UserRepositoryInterface::getUserEntityByUserCredentials()`
       
-  Also make sure to implement `findIdentityByAccessToken()`, it's used by `NIOLAB\oauth2\components\authMethods\HttpBearerAuth` to authenticate the user by access token. Example:
+  Also make sure to implement `findIdentityByAccessToken()`, it's used by `davidxu\oauth2\components\authMethods\HttpBearerAuth` to authenticate the user by access token. Example:
   ```php
   <?php
       /**
@@ -33,8 +34,8 @@ You need a few things:
     public static function findIdentityByAccessToken($token, $type = null) {
         return static::find()
             ->where(['user.status'=>static::STATUS_ACTIVE])
-            ->leftJoin('oauth_access_token', '`user`.`id` = `oauth_access_token`.`user_id`')
-            ->andWhere(['oauth_access_token.identifier' => $token])
+            ->leftJoin('{{%oauth_access_token}}', '`user`.`id` = `{{%oauth_access_token}}`.`user_id`')
+            ->andWhere(['{{%oauth_access_token}}.identifier' => $token])
             ->one();
     }
   ```
@@ -55,7 +56,7 @@ Make sure the file rights are 600 or 660 for the generated key files.
 - The migrations
 
 ```bash
-$ php yii migrate --migrationPath=@vendor/niolab/yii2-oauth2-server/migrations
+$ php yii migrate --migrationPath=@vendor/davidxu/yii2-oauth2-server/migrations
 ```
 
 ### Step 2
@@ -65,7 +66,7 @@ Add it as a yii2 module:
 $config = [
  'modules' => [
         'oauth2' => [
-            'class' => NIOLAB\oauth2\Module::class,
+            'class' => davidxu\oauth2\Module::class,
             'userRepository' => \app\models\User::class,
             'privateKey' => '@common/data/keys/private.key',
             'publicKey' => '@common/data/keys/public.key',
@@ -92,10 +93,10 @@ There's not a lot of configuration yet. Maybe the types of grants available will
 ### Check Client Credentials
 Because the Client Credentials method creates access tokens that are not linked to a specific user, it uses a different filter to check the validity of the token.
 
-Add the `NIOLAB\oauth2\components\filters\CheckClientCredentials`  to your behaviors to validate Client Credential access keys.
+Add the `davidxu\oauth2\components\filters\CheckClientCredentials`  to your behaviors to validate Client Credential access keys.
 
 ### Other auth flows
-Add the `NIOLAB\oauth2\components\authMethods\HttpBearerAuth`  to your behaviors, for example:
+Add the `davidxu\oauth2\components\authMethods\HttpBearerAuth`  to your behaviors, for example:
 ```php
 <?php
  public function behaviors()

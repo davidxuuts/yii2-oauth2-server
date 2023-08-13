@@ -1,14 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Harry
- * Date: 15-5-2018
- * Time: 16:46
- *
- * Client = andere applicatie die connectie maakt met ons als oauth2 server
- */
-
-namespace NIOLAB\oauth2\models;
+namespace davidxu\oauth2\models;
 
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
@@ -43,11 +34,30 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
 
     protected $scopes = [];
 
+    protected ?string $accessTokenTable = '{{%oauth_access_token}}';
+    protected ?string $accessTokenScopeTable = '{{%oauth_access_token_scope}}';
+    protected ?string $clientTable = '{{%oauth_client}}';
+
+    public function init()
+    {
+        parent::init();
+        if (Yii::$app->params['davidxu.oauth2.table']) {
+            $this->clientTable = Yii::$app->params['davidxu.oauth2.table']['authClientTable'] ?? $this->clientTable;
+        }
+
+        if (Yii::$app->params['davidxu.oauth2.table']) {
+            $this->accessTokenTable = Yii::$app->params['davidxu.oauth2.table']['authAccessTokenTable'] ?? $this->accessTokenTable;
+        }
+        if (Yii::$app->params['davidxu.oauth2.table']) {
+            $this->accessTokenScopeTable = Yii::$app->params['davidxu.oauth2.table']['authAccessTokenScopeTable'] ?? $this->accessTokenScopeTable;
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
     public static function tableName() {
-        return '{{%oauth_access_token}}';
+        return $this->accessTokenTable;
     }
 
     public function behaviors() {
@@ -153,7 +163,7 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
     }
 
     public function getRelatedScopes() {
-        return $this->hasMany(Scope::class, ['id' => 'scope_id'])->viaTable('oauth_access_token_scope', ['access_token_id' => 'id']);
+        return $this->hasMany(Scope::class, ['id' => 'scope_id'])->viaTable($this->accessTokenScopeTable, ['access_token_id' => 'id']);
     }
 
     /**

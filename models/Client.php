@@ -1,14 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Harry
- * Date: 15-5-2018
- * Time: 16:46
- *
- * Client = andere applicatie die connectie maakt met ons als oauth2 server
- */
-
-namespace NIOLAB\oauth2\models;
+namespace davidxu\oauth2\models;
 
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use Yii;
@@ -46,12 +37,27 @@ class Client extends ActiveRecord implements ClientEntityInterface {
     const GRANT_TYPE_IMPLICIT = 4;
     const GRANT_TYPE_REFRESH_TOKEN = 5;
 
+    protected ?string $clientTable = '{{%oauth_client}}';
+    protected ?string $clientScopeTable = '{{%oauth_client_scope}}';
+
+    public function init()
+    {
+        parent::init();
+        if (Yii::$app->params['davidxu.oauth2.table']) {
+            $this->clientTable = Yii::$app->params['davidxu.oauth2.table']['authClientTable'] ?? $this->clientTable;
+        }
+
+        if (Yii::$app->params['davidxu.oauth2.table']) {
+            $this->clientScopeTable = Yii::$app->params['davidxu.oauth2.table']['authClientScopeTable'] ?? $this->clientScopeTable;
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return '{{%oauth_client}}';
+        return $this->clientTable;
     }
 
     public static function getGrantTypeOptions()
@@ -158,7 +164,7 @@ class Client extends ActiveRecord implements ClientEntityInterface {
     public function getScopes(callable $filter)
     {
         return $this->hasMany(Scope::class, ['id' => 'scope_id'])
-            ->viaTable('{{%oauth_client_scope}}', ['client_id' => 'id'], $filter);
+            ->viaTable($this->clientScopeTable, ['client_id' => 'id'], $filter);
     }
 
 

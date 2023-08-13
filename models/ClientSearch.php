@@ -1,12 +1,12 @@
 <?php
 
-namespace NIOLAB\oauth2\models;
+namespace davidxu\oauth2\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 
 /**
- * ClientSearch represents the model behind the search form of `NIOLAB\oauth2\models\Client`.
+ * ClientSearch represents the model behind the search form of `davidxu\oauth2\models\Client`.
  */
 class ClientSearch extends Client
 {

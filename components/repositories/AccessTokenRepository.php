@@ -1,20 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Harry
- * Date: 15-5-2018
- * Time: 16:21
- */
-
-namespace NIOLAB\oauth2\components\repositories;
+namespace davidxu\oauth2\components\repositories;
 
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
-use NIOLAB\oauth2\models\AccessToken;
-use NIOLAB\oauth2\models\Scope;
+use davidxu\oauth2\models\AccessToken;
+use davidxu\oauth2\models\Scope;
 use yii\helpers\Json;
 
 class AccessTokenRepository implements \League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface {

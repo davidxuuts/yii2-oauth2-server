@@ -1,27 +1,22 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Harry
- * Date: 15-5-2018
- * Time: 16:06
- */
-namespace NIOLAB\oauth2;
+
+namespace davidxu\oauth2;
 
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
-use NIOLAB\oauth2\components\repositories\AuthCodeRepository;
-use NIOLAB\oauth2\components\repositories\RefreshTokenRepository;
-use NIOLAB\oauth2\components\web\ServerRequest;
-use NIOLAB\oauth2\components\web\ServerResponse;
-use NIOLAB\oauth2\components\repositories\AccessTokenRepository;
-use NIOLAB\oauth2\components\repositories\ClientRepository;
-use NIOLAB\oauth2\components\repositories\ScopeRepository;
-use NIOLAB\oauth2\controllers\AuthorizeController;
-use NIOLAB\oauth2\controllers\ClientsController;
-use NIOLAB\oauth2\controllers\TokenController;
+use davidxu\oauth2\components\repositories\AuthCodeRepository;
+use davidxu\oauth2\components\repositories\RefreshTokenRepository;
+use davidxu\oauth2\components\web\ServerRequest;
+use davidxu\oauth2\components\web\ServerResponse;
+use davidxu\oauth2\components\repositories\AccessTokenRepository;
+use davidxu\oauth2\components\repositories\ClientRepository;
+use davidxu\oauth2\components\repositories\ScopeRepository;
+use davidxu\oauth2\controllers\AuthorizeController;
+use davidxu\oauth2\controllers\ClientsController;
+use davidxu\oauth2\controllers\TokenController;
 use Yii;
 use yii\base\Application;
 use yii\base\BootstrapInterface;
@@ -35,7 +30,7 @@ class Module extends \yii\base\Module implements BootstrapInterface {
     /**
      * {@inheritdoc}
      */
-    public $controllerNamespace = 'NIOLAB\oauth2\controllers';
+    public $controllerNamespace = 'davidxu\oauth2\controllers';
 
 
     /**
@@ -58,11 +53,15 @@ class Module extends \yii\base\Module implements BootstrapInterface {
      */
     public $encryptionKey;
 
-
     /**
      * @var string The period an accessToken should be valid for. Defaults to PT1H (1 hour). See DateInterval.
      */
     public $accessTokenTTL = 'PT1H';
+
+    /**
+     * @var string The period an accessToken should be valid for. Defaults to PT1H (1 hour). See DateInterval.
+     */
+    public $refreshTokenTTL = 'P1M';
 
     /**
      * @var bool Enable the Client Credentials Grant (https://oauth2.thephpleague.com/authorization-server/client-credentials-grant/)
@@ -165,13 +164,10 @@ class Module extends \yii\base\Module implements BootstrapInterface {
 
             /* Password Grant */
             if ($this->enablePasswordGrant) {
-                $server->enableGrantType(
-                    new PasswordGrant(
-                        $userRepository,
-                        $refreshTokenRepository
-                    ),
-                    new \DateInterval($this->accessTokenTTL)
-                );
+                $server->enableGrantType(new PasswordGrant(
+                    $userRepository,
+                    $refreshTokenRepository
+                ));
                 $enableRefreshGrant = true;
             }
 
@@ -180,9 +176,9 @@ class Module extends \yii\base\Module implements BootstrapInterface {
                 $grant = new AuthCodeGrant(
                     $authCodeRepository,
                     $refreshTokenRepository,
-                    new \DateInterval('P1M')
+                    new \DateInterval($this->refreshTokenTTL)
                 );
-                $grant->setRefreshTokenTTL(new \DateInterval('P1M'));
+                $grant->setRefreshTokenTTL(new \DateInterval($this->refreshTokenTTL));
                 $server->enableGrantType($grant);
                 $enableRefreshGrant = true;
             }
@@ -192,7 +188,7 @@ class Module extends \yii\base\Module implements BootstrapInterface {
                 $grant = new RefreshTokenGrant(
                     $refreshTokenRepository
                 );
-                $grant->setRefreshTokenTTL(new \DateInterval('P1M'));
+                $grant->setRefreshTokenTTL(new \DateInterval($this->refreshTokenTTL));
                 $server->enableGrantType($grant);
             }
 
