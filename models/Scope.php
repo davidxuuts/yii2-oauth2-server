@@ -11,6 +11,7 @@
 namespace davidxu\oauth2\models;
 
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
+use Yii;
 use yii\db\ActiveRecord;
 
 /**
@@ -22,42 +23,45 @@ use yii\db\ActiveRecord;
  */
 class Scope extends ActiveRecord implements ScopeEntityInterface {
 
-    protected ?string $scopeTable = '{{%oauth_scope}}';
+    protected static ?string $scopeTable = '{{%oauth_scope}}';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
-        if (Yii::$app->params['davidxu.oauth2.table']) {
-            $this->scopeTable = Yii::$app->params['davidxu.oauth2.table']['authScopeTable'] ?? $this->scopeTable;
+        if (isset(Yii::$app->params['davidxu.oauth2.table'])) {
+            self::$scopeTable = Yii::$app->params['davidxu.oauth2.table']['authScopeTable']
+                ?? self::$scopeTable;
         }
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): ?string
     {
-        return $this->scopeTable;
+        return self::$scopeTable;
     }
 
 
     /**
      * Get the scope's identifier.
      *
-     * @return string
+     * @return string|int
      */
-    public function getIdentifier() {
+    public function getIdentifier(): string|int
+    {
         return $this->identifier;
     }
 
     /**
      * Specify data which should be serialized to JSON
      * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * @return string|int data which can be serialized by <b>json_encode</b>,
      * which is a value of any type other than a resource.
      * @since 5.4.0
      */
-    public function jsonSerialize():mixed {
+    public function jsonSerialize(): string|int
+    {
         return $this->getIdentifier();
     }
 

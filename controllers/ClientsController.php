@@ -3,15 +3,18 @@
 namespace davidxu\oauth2\controllers;
 
 use davidxu\oauth2\Module;
+use Throwable;
 use Yii;
 use davidxu\oauth2\models\Client;
 use davidxu\oauth2\models\ClientSearch;
-use yii\base\Security;
-use yii\helpers\StringHelper;
+use yii\base\Exception;
+use yii\db\StaleObjectException;
+use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
+use yii\web\Response;
 
 /**
  * ClientController implements the CRUD actions for Client model.
@@ -22,7 +25,7 @@ class ClientsController extends Controller
     /**
      * {@inheritdoc}
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         return [
             'access' => [
@@ -43,7 +46,11 @@ class ClientsController extends Controller
         ];
     }
 
-    public function beforeAction($action) {
+    /**
+     * @throws NotFoundHttpException|BadRequestHttpException
+     */
+    public function beforeAction($action): bool
+    {
         if (!parent::beforeAction($action)) {
             return false;
         }
@@ -59,9 +66,9 @@ class ClientsController extends Controller
 
     /**
      * Lists all Client models.
-     * @return mixed
+     * @return string
      */
-    public function actionIndex()
+    public function actionIndex(): string
     {
         $searchModel = new ClientSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
@@ -74,11 +81,11 @@ class ClientsController extends Controller
 
     /**
      * Displays a single Client model.
-     * @param integer $id
-     * @return mixed
+     * @param int|string $id
+     * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id)
+    public function actionView(int|string $id): string
     {
         return $this->render('view', [
             'model' => $this->findModel($id),
@@ -88,9 +95,10 @@ class ClientsController extends Controller
     /**
      * Creates a new Client model.
      * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return mixed
+     * @return string|Response
+     * @throws Exception
      */
-    public function actionCreate()
+    public function actionCreate(): Response|string
     {
         $model = new Client();
 
@@ -128,11 +136,13 @@ class ClientsController extends Controller
     /**
      * Deletes an existing Client model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param integer $id
-     * @return mixed
+     * @param int|string $id
+     * @return Response|null
      * @throws NotFoundHttpException if the model cannot be found
+     * @throws StaleObjectException if the model cannot be found
+     * @throws Throwable if the model cannot be found
      */
-    public function actionDelete($id)
+    public function actionDelete(int|string $id): Response|null
     {
         $this->findModel($id)->delete();
 
@@ -142,11 +152,11 @@ class ClientsController extends Controller
     /**
      * Finds the Client model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param integer $id
+     * @param int|string $id
      * @return Client the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id)
+    protected function findModel(int|string $id): Client
     {
         if (($model = Client::findOne($id)) !== null) {
             return $model;

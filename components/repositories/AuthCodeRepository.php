@@ -4,31 +4,31 @@ namespace davidxu\oauth2\components\repositories;
 
 use frontend\models\Auth;
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
-use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use davidxu\oauth2\models\AuthCode;
 use davidxu\oauth2\models\Scope;
+use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 
-class AuthCodeRepository implements \League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface {
-
+class AuthCodeRepository implements AuthCodeRepositoryInterface
+{
 
     /**
      * Creates a new AuthCode
      *
-     * @return AuthCodeEntityInterface
+     * @return AuthCodeEntityInterface|AuthCode
      */
-    public function getNewAuthCode() {
-        $code = new AuthCode();
-        return $code;
+    public function getNewAuthCode(): AuthCodeEntityInterface|AuthCode
+    {
+        return new AuthCode();
     }
 
     /**
      * Persists a new auth code to permanent storage.
      *
-     * @param AuthCodeEntityInterface $authCodeEntity
+     * @param ?AuthCodeEntityInterface $authCodeEntity
      *
-     * @throws UniqueTokenIdentifierConstraintViolationException
      */
-    public function persistNewAuthCode(AuthCodeEntityInterface $authCodeEntity) {
+    public function persistNewAuthCode(?AuthCodeEntityInterface $authCodeEntity): void
+    {
         if ($authCodeEntity instanceof AuthCode) {
             $authCodeEntity->expired_at = $authCodeEntity->getExpiryDateTime()->getTimestamp();
             if ($authCodeEntity->save()) {
@@ -46,9 +46,10 @@ class AuthCodeRepository implements \League\OAuth2\Server\Repositories\AuthCodeR
     /**
      * Revoke an auth code.
      *
-     * @param string $codeId
+     * @param string|int $codeId
      */
-    public function revokeAuthCode($codeId) {
+    public function revokeAuthCode($codeId): void
+    {
         $code = AuthCode::find()->where(['identifier'=>$codeId])->one();
         if ($code instanceof AuthCode) {
             $code->updateAttributes(['status' => AuthCode::STATUS_REVOKED]);
@@ -58,11 +59,12 @@ class AuthCodeRepository implements \League\OAuth2\Server\Repositories\AuthCodeR
     /**
      * Check if the auth code has been revoked.
      *
-     * @param string $codeId
+     * @param string|int $codeId
      *
      * @return bool Return true if this code has been revoked
      */
-    public function isAuthCodeRevoked($codeId) {
+    public function isAuthCodeRevoked($codeId): bool
+    {
         $code = AuthCode::find()->where(['identifier'=>$codeId])->one();
         return $code === null || $code->status == AuthCode::STATUS_REVOKED;
     }

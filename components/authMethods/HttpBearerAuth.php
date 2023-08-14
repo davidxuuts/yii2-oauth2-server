@@ -1,5 +1,6 @@
 <?php
 namespace davidxu\oauth2\components\authMethods;
+use Exception;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use League\OAuth2\Server\ResourceServer;
@@ -12,19 +13,12 @@ use yii\web\HttpException;
 use yii\web\IdentityInterface;
 use yii\web\Request;
 use yii\web\Response;
-use yii\web\UnauthorizedHttpException;
 use yii\web\User;
 
-/**
- * Created by PhpStorm.
- * User: Harry_000
- * Date: 11-7-2018
- * Time: 10:50
- */
+class HttpBearerAuth extends AuthMethod
+{
 
-class HttpBearerAuth extends AuthMethod {
-
-    private $_accessTokenRepository;
+    private AccessTokenRepository|AccessTokenRepositoryInterface|string|null  $_accessTokenRepository = null;
 
 
     /**
@@ -33,9 +27,10 @@ class HttpBearerAuth extends AuthMethod {
      * @param Request $request
      * @param Response $response
      * @return IdentityInterface the authenticated user identity. If authentication information is not provided, null will be returned.
-     * @throws UnauthorizedHttpException if authentication information is provided but is invalid.
+     * @throws HttpException|OauthHttpException  if authentication information is provided but is invalid.
      */
-    public function authenticate($user, $request, $response) {
+    public function authenticate($user, $request, $response): IdentityInterface
+    {
 
         /** @var Module $module */
         $module = Yii::$app->getModule('oauth2');
@@ -57,7 +52,7 @@ class HttpBearerAuth extends AuthMethod {
             $tokenId = $request->getAttribute('oauth_access_token_id');
 
             /** See also \common\models\User::findIdentityByAccessToken  */
-            $identity = $user->loginByAccessToken($tokenId,get_called_class());
+            $identity = $user->loginByAccessToken($tokenId, get_called_class());
 
             if ($identity === null) {
                 throw OAuthServerException::accessDenied('User not found');
@@ -71,7 +66,7 @@ class HttpBearerAuth extends AuthMethod {
 
         } catch (OAuthServerException $e) {
             throw new OAuthHttpException($e);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new HttpException(500, 'Unable to validate the request.', 0, YII_DEBUG ? $e : null);
         }
 
@@ -81,14 +76,13 @@ class HttpBearerAuth extends AuthMethod {
     }
 
     /**
-     * @return mixed
+     * @return string|AccessTokenRepositoryInterface|null|AccessTokenRepository
      */
-    public function getAccessTokenRepository() {
+    public function getAccessTokenRepository(): string|AccessTokenRepositoryInterface|null|AccessTokenRepository
+    {
         if (!$this->_accessTokenRepository instanceof AccessTokenRepositoryInterface) {
             $this->_accessTokenRepository = new AccessTokenRepository();
         }
         return $this->_accessTokenRepository;
     }
-
-
 }

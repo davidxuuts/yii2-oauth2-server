@@ -1,12 +1,16 @@
 <?php
 namespace davidxu\oauth2\models;
 
+use DateTimeImmutable;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
 use League\OAuth2\Server\Entities\Traits\TokenEntityTrait;
+use Yii;
+use yii\base\InvalidConfigException;
 use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 
@@ -24,8 +28,10 @@ use yii\helpers\ArrayHelper;
  * @property int $status
  *
  * @property Scope[] relatedScopes
+ * @property Client relatedClient
  */
-class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
+class AccessToken extends ActiveRecord implements AccessTokenEntityInterface
+{
 
     use AccessTokenTrait,TokenEntityTrait;
 
@@ -34,39 +40,39 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
 
     protected $scopes = [];
 
-    protected ?string $accessTokenTable = '{{%oauth_access_token}}';
-    protected ?string $accessTokenScopeTable = '{{%oauth_access_token_scope}}';
-    protected ?string $clientTable = '{{%oauth_client}}';
+    protected static ?string $accessTokenTable = '{{%oauth_access_token}}';
+    protected static ?string $accessTokenScopeTable = '{{%oauth_access_token_scope}}';
+    protected static ?string $clientTable = '{{%oauth_client}}';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
-        if (Yii::$app->params['davidxu.oauth2.table']) {
-            $this->clientTable = Yii::$app->params['davidxu.oauth2.table']['authClientTable'] ?? $this->clientTable;
-        }
-
-        if (Yii::$app->params['davidxu.oauth2.table']) {
-            $this->accessTokenTable = Yii::$app->params['davidxu.oauth2.table']['authAccessTokenTable'] ?? $this->accessTokenTable;
-        }
-        if (Yii::$app->params['davidxu.oauth2.table']) {
-            $this->accessTokenScopeTable = Yii::$app->params['davidxu.oauth2.table']['authAccessTokenScopeTable'] ?? $this->accessTokenScopeTable;
+        if (isset(Yii::$app->params['davidxu.oauth2.table'])) {
+            self::$clientTable = Yii::$app->params['davidxu.oauth2.table']['authClientTable']
+                ?? self::$clientTable;
+            self::$accessTokenTable = Yii::$app->params['davidxu.oauth2.table']['authAccessTokenTable']
+                ?? self::$accessTokenTable;
+            self::$accessTokenScopeTable = Yii::$app->params['davidxu.oauth2.table']['authAccessTokenScopeTable']
+                ?? self::$accessTokenScopeTable;
         }
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function tableName() {
-        return $this->accessTokenTable;
+    public static function tableName(): ?string
+    {
+        return self::$accessTokenTable;
     }
 
-    public function behaviors() {
+    public function behaviors(): array
+    {
         return ArrayHelper::merge(parent::behaviors(),[
             TimestampBehavior::class,
         ]);
     }
 
-    public function afterFind()
+    public function afterFind(): void
     {
         foreach($this->relatedScopes as $scope) {
             $this->addScope($scope);
@@ -76,14 +82,16 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
     /**
      * @inheritDoc
      */
-    public function getExpiryDateTime() {
-        return (new \DateTimeImmutable())->setTimestamp($this->expired_at);
+    public function getExpiryDateTime(): DateTimeImmutable
+    {
+        return (new DateTimeImmutable())->setTimestamp($this->expired_at);
     }
 
     /**
      * @inheritDoc
      */
-    public function setExpiryDateTime(\DateTimeImmutable $dateTime) {
+    public function setExpiryDateTime(DateTimeImmutable $dateTime): void
+    {
         $this->expired_at = $dateTime->getTimestamp();
     }
 
@@ -92,16 +100,18 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
      *
      * @param string|int|null $identifier The identifier of the user
      */
-    public function setUserIdentifier($identifier) {
+    public function setUserIdentifier($identifier): void
+    {
         $this->user_id = $identifier;
     }
 
     /**
      * Get the token user's identifier.
      *
-     * @return string|int|null
+     * @return int|string
      */
-    public function getUserIdentifier() {
+    public function getUserIdentifier(): int|string
+    {
         return $this->user_id;
     }
 
@@ -110,7 +120,8 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
      *
      * @param ClientEntityInterface $client
      */
-    public function setClient(ClientEntityInterface $client) {
+    public function setClient(ClientEntityInterface $client): void
+    {
         $this->client_id = $client->id;
     }
 
@@ -128,7 +139,8 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
     /**
      * {@inheritdoc}
      */
-    public function rules() {
+    public function rules(): array
+    {
         return [
             [['client_id'], 'required'], // identifier
             [['user_id'], 'default'],
@@ -140,14 +152,17 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
     /**
      * @return Client
      */
-    public function getClient() {
+    public function getClient(): Client
+    {
         return $this->relatedClient;
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * Gets query of [[Client]]
+     * @return ActiveQuery
      */
-    public function getRelatedClient() {
+    public function getRelatedClient(): ActiveQuery
+    {
         return $this->hasOne(Client::class, ['id' => 'client_id']);
     }
 
@@ -157,28 +172,35 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
      *
      * @param ScopeEntityInterface $scope
      */
-    public function addScope(ScopeEntityInterface $scope)
+    public function addScope(ScopeEntityInterface $scope): void
     {
         $this->scopes[$scope->getIdentifier()] = $scope;
     }
 
-    public function getRelatedScopes() {
-        return $this->hasMany(Scope::class, ['id' => 'scope_id'])->viaTable($this->accessTokenScopeTable, ['access_token_id' => 'id']);
+    /**
+     * @throws InvalidConfigException
+     */
+    public function getRelatedScopes(): ActiveQuery
+    {
+        return $this->hasMany(Scope::class, ['id' => 'scope_id'])
+            ->viaTable(self::$accessTokenScopeTable, ['access_token_id' => 'id']);
     }
 
     /**
      * @return array
      */
-    public function getScopes() {
+    public function getScopes(): array
+    {
         return array_keys($this->scopes);
     }
 
     /**
      * Get the token's identifier.
      *
-     * @return string
+     * @return string|int
      */
-    public function getIdentifier() {
+    public function getIdentifier(): string|int
+    {
         return $this->identifier;
     }
 
@@ -187,8 +209,8 @@ class AccessToken extends ActiveRecord implements AccessTokenEntityInterface {
      *
      * @param mixed $identifier
      */
-    public function setIdentifier($identifier) {
+    public function setIdentifier($identifier): void
+    {
         $this->identifier = $identifier;
     }
-
 }

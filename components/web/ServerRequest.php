@@ -1,9 +1,8 @@
 <?php
 /**
  *
- * A PSR-7 compatible version of a request. Required for the phpleague oauth2 library.
+ * A PSR-7 compatible version of a request. Required for the php league oauth2 library.
  *
- * Based on original by chervand (Source: https://github.com/chervand/yii2-oauth2-server)
  */
 
 namespace davidxu\oauth2\components\web;
@@ -25,5 +24,4 @@ class ServerRequest extends \GuzzleHttp\Psr7\ServerRequest
             $request->rawBody
         );
     }
-
 }

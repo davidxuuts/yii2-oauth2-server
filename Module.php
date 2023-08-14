@@ -2,9 +2,11 @@
 
 namespace davidxu\oauth2;
 
+use DateInterval;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
+use League\OAuth2\Server\Grant\ImplicitGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use davidxu\oauth2\components\repositories\AuthCodeRepository;
@@ -20,10 +22,9 @@ use davidxu\oauth2\controllers\TokenController;
 use Yii;
 use yii\base\Application;
 use yii\base\BootstrapInterface;
+use yii\base\InvalidConfigException;
 use yii\filters\Cors;
-use yii\helpers\ArrayHelper;
 use yii\rest\UrlRule;
-use yii\web\GroupUrlRule;
 
 class Module extends \yii\base\Module implements BootstrapInterface {
 
@@ -36,56 +37,56 @@ class Module extends \yii\base\Module implements BootstrapInterface {
     /**
      * @var string Class to use as UserRepository
      */
-    public $userRepository;
+    public string $userRepository;
 
     /**
      * @var string Alias to the private key file
      */
-    public $privateKey;
+    public string $privateKey;
 
     /**
      * @var string Alias to the public key file
      */
-    public $publicKey;
+    public string $publicKey;
 
     /**
-     * @var string A random encryption key. For example you could create one with base64_encode(random_bytes(32))
+     * @var string A random encryption key. For example, you could create one with base64_encode(random_bytes(32))
      */
-    public $encryptionKey;
-
-    /**
-     * @var string The period an accessToken should be valid for. Defaults to PT1H (1 hour). See DateInterval.
-     */
-    public $accessTokenTTL = 'PT1H';
+    public string $encryptionKey;
 
     /**
      * @var string The period an accessToken should be valid for. Defaults to PT1H (1 hour). See DateInterval.
      */
-    public $refreshTokenTTL = 'P1M';
+    public string $accessTokenTTL = 'PT1H';
+
+    /**
+     * @var string The period an accessToken should be valid for. Defaults to PT1H (1 hour). See DateInterval.
+     */
+    public string $refreshTokenTTL = 'P1M';
 
     /**
      * @var bool Enable the Client Credentials Grant (https://oauth2.thephpleague.com/authorization-server/client-credentials-grant/)
      */
-    public $enableClientCredentialsGrant = true;
+    public bool $enableClientCredentialsGrant = true;
 
     /**
      * @var bool Enable the Password Grant (https://oauth2.thephpleague.com/authorization-server/resource-owner-password-credentials-grant/)
      */
-    public $enablePasswordGrant = true;
+    public bool $enablePasswordGrant = true;
 
     /**
      * @var bool Enable the Authorization Code Grant (https://oauth2.thephpleague.com/authorization-server/auth-code-grant/)
      */
-    public $enableAuthorizationCodeGrant = true;
+    public bool $enableAuthorizationCodeGrant = true;
 
     /**
      * @var bool Enable the Implicit Grant (https://oauth2.thephpleague.com/authorization-server/implicit-grant/
      */
-    public $enableImplicitGrant = false;
+    public bool $enableImplicitGrant = false;
 
-    public $urlManagerRules = [];
+    public array $urlManagerRules = [];
 
-    public $enableClientsController = true;
+    public bool $enableClientsController = true;
 
     public $controllerMap = [
         'authorize' => [
@@ -106,7 +107,7 @@ class Module extends \yii\base\Module implements BootstrapInterface {
      * Sets module's URL manager rules on application's bootstrap.
      * @param Application $app
      */
-    public function bootstrap($app)
+    public function bootstrap($app): void
     {
         $app->getUrlManager()
             ->addRules([
@@ -124,12 +125,14 @@ class Module extends \yii\base\Module implements BootstrapInterface {
 
     /**
      * @return null|AuthorizationServer
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
+     * @throws \Exception
      */
-    public function getAuthorizationServer() {
+    public function getAuthorizationServer(): ?AuthorizationServer
+    {
         if (!$this->has('server')) {
 
-            $clientRespository = new ClientRepository();
+            $clientRepository = new ClientRepository();
             $accessTokenRepository = new AccessTokenRepository();
             $authCodeRepository = new AuthCodeRepository();
             $refreshTokenRepository = new RefreshTokenRepository();
@@ -137,7 +140,7 @@ class Module extends \yii\base\Module implements BootstrapInterface {
             $scopeRepository = new ScopeRepository();
 
             $server = new AuthorizationServer(
-                $clientRespository,
+                $clientRepository,
                 $accessTokenRepository,
                 $scopeRepository,
                 Yii::getAlias($this->privateKey),
@@ -150,15 +153,15 @@ class Module extends \yii\base\Module implements BootstrapInterface {
             if ($this->enableClientCredentialsGrant) {
                 $server->enableGrantType(
                     new ClientCredentialsGrant(),
-                    new \DateInterval($this->accessTokenTTL)
+                    new DateInterval($this->accessTokenTTL)
                 );
             }
 
             /* Client Credentials Grant */
             if ($this->enableImplicitGrant) {
                 $server->enableGrantType(
-                    new ImplicitGrant(new \DateInterval($this->accessTokenTTL)),
-                    new \DateInterval($this->accessTokenTTL)
+                    new ImplicitGrant(new DateInterval($this->accessTokenTTL)),
+                    new DateInterval($this->accessTokenTTL)
                 );
             }
 
@@ -176,9 +179,9 @@ class Module extends \yii\base\Module implements BootstrapInterface {
                 $grant = new AuthCodeGrant(
                     $authCodeRepository,
                     $refreshTokenRepository,
-                    new \DateInterval($this->refreshTokenTTL)
+                    new DateInterval($this->refreshTokenTTL)
                 );
-                $grant->setRefreshTokenTTL(new \DateInterval($this->refreshTokenTTL));
+                $grant->setRefreshTokenTTL(new DateInterval($this->refreshTokenTTL));
                 $server->enableGrantType($grant);
                 $enableRefreshGrant = true;
             }
@@ -188,7 +191,7 @@ class Module extends \yii\base\Module implements BootstrapInterface {
                 $grant = new RefreshTokenGrant(
                     $refreshTokenRepository
                 );
-                $grant->setRefreshTokenTTL(new \DateInterval($this->refreshTokenTTL));
+                $grant->setRefreshTokenTTL(new DateInterval($this->refreshTokenTTL));
                 $server->enableGrantType($grant);
             }
 

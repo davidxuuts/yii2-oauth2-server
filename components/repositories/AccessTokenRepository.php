@@ -5,13 +5,13 @@ use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
-use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use davidxu\oauth2\models\AccessToken;
 use davidxu\oauth2\models\Scope;
+use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use yii\helpers\Json;
 
-class AccessTokenRepository implements \League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface {
-
+class AccessTokenRepository implements AccessTokenRepositoryInterface
+{
 
     /**
      * Create a new access token
@@ -20,9 +20,11 @@ class AccessTokenRepository implements \League\OAuth2\Server\Repositories\Access
      * @param ScopeEntityInterface[] $scopes
      * @param mixed $userIdentifier
      *
-     * @return AccessTokenEntityInterface
+     * @return AccessToken|AccessTokenEntityInterface
+     * @throws OAuthServerException
      */
-    public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null) {
+    public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null): AccessToken|AccessTokenEntityInterface
+    {
         $token = new AccessToken();
         $token->setClient($clientEntity);
         $token->setUserIdentifier($userIdentifier);
@@ -36,11 +38,11 @@ class AccessTokenRepository implements \League\OAuth2\Server\Repositories\Access
         return $token;
     }
 
-
     /**
      * @inheritDoc
      */
-    public function persistNewAccessToken(AccessTokenEntityInterface $accessTokenEntity) {
+    public function persistNewAccessToken(AccessTokenEntityInterface $accessTokenEntity): void
+    {
         if ($accessTokenEntity instanceof  AccessToken) {
             $accessTokenEntity->expired_at = $accessTokenEntity->getExpiryDateTime()->getTimestamp();
             if ($accessTokenEntity->save()) {
@@ -60,7 +62,8 @@ class AccessTokenRepository implements \League\OAuth2\Server\Repositories\Access
      *
      * @param string $tokenId
      */
-    public function revokeAccessToken($tokenId) {
+    public function revokeAccessToken($tokenId): void
+    {
         $token = AccessToken::find()->where(['identifier'=>$tokenId])->one();
         if ($token instanceof AccessToken) {
             $token->updateAttributes(['status' => AccessToken::STATUS_REVOKED]);
@@ -74,7 +77,8 @@ class AccessTokenRepository implements \League\OAuth2\Server\Repositories\Access
      *
      * @return bool Return true if this token has been revoked
      */
-    public function isAccessTokenRevoked($tokenId) {
+    public function isAccessTokenRevoked($tokenId): bool
+    {
         $token = AccessToken::find()->where(['identifier'=>$tokenId])->one();
         return $token === null || $token->status == AccessToken::STATUS_REVOKED;
     }

@@ -1,18 +1,15 @@
 <?php
 namespace davidxu\oauth2\controllers;
 
-use common\models\User;
+use yii\web\User;
+use League\OAuth2\Server\Entities\UserEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use davidxu\oauth2\components\web\OauthHttpException;
 use davidxu\oauth2\components\web\ServerResponse;
-use davidxu\oauth2\models\AccessToken;
 use davidxu\oauth2\Module;
 use Yii;
-use yii\helpers\Json;
 use yii\web\Controller;
-use yii\web\HeaderCollection;
 use yii\web\HttpException;
-use yii\web\Response;
 use Throwable;
 
 /**
@@ -25,15 +22,13 @@ use Throwable;
 class AuthorizeController extends Controller {
 
     /**
-     * @return mixed
      * @throws HttpException
      * @throws OauthHttpException
      * @throws Throwable
      */
-    public function actionIndex() {
-        /** @var Module $module */
+    public function actionIndex(): void
+    {
         $module = $this->module;
-
         try {
             $request =  $module->getRequest();
             $response = $module->getResponse();
@@ -45,13 +40,14 @@ class AuthorizeController extends Controller {
             // You will probably want to redirect the user at this point to a login endpoint.
 
             if (Yii::$app->user->isGuest) {
-                Yii::$app->user->setReturnUrl(\Yii::$app->request->url);
-                return $this->redirect(Yii::$app->user->loginUrl)->send();
+                Yii::$app->user->setReturnUrl(Yii::$app->request->url);
+//                return $this->redirect(Yii::$app->user->loginUrl)->send();
+                $this->redirect(Yii::$app->user->loginUrl)->send();
             }
 
 
             // Once the user has logged in set the user on the AuthorizationRequest
-            /** @var User $user */
+            /** @var UserEntityInterface|User $user */
             $user = Yii::$app->user->getIdentity();
             $authRequest->setUser($user); // an instance of UserEntityInterface
 
@@ -74,6 +70,4 @@ class AuthorizeController extends Controller {
             throw new HttpException(500, 'Unable to respond to access token request.', 0, YII_DEBUG ? $e : null);
         }
     }
-
-
 }

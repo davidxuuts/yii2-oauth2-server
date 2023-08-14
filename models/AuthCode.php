@@ -1,14 +1,14 @@
 <?php
 namespace davidxu\oauth2\models;
 
-use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
+use DateTimeImmutable;
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
-use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
-use League\OAuth2\Server\Entities\Traits\AuthCodeTrait;
-use League\OAuth2\Server\Entities\Traits\TokenEntityTrait;
+use Yii;
+use yii\base\InvalidConfigException;
 use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 
@@ -29,44 +29,45 @@ use yii\helpers\ArrayHelper;
  * @property Client relatedClient
  *
  */
-class AuthCode extends ActiveRecord implements AuthCodeEntityInterface {
-
+class AuthCode extends ActiveRecord implements AuthCodeEntityInterface
+{
     const STATUS_ACTIVE = 1;
     const STATUS_REVOKED = -10;
 
-    protected $scopes = [];
+    protected array $scopes = [];
 
-    protected $redirectUri;
+    protected ?string $redirectUri;
     
-    protected ?string $authCodeTable = '{{%oauth_auth_code}}';
-    protected ?string $authCodeScopeTable = '{{%oauth_auth_code_scope}}';
+    protected static ?string $authCodeTable = '{{%oauth_auth_code}}';
+    protected static ?string $authCodeScopeTable = '{{%oauth_auth_code_scope}}';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
-        if (Yii::$app->params['davidxu.oauth2.table']) {
-            $this->authCodeTable = Yii::$app->params['davidxu.oauth2.table']['authAuthCodeTable'] ?? $this->authCodeTable;
-        }
-
-        if (Yii::$app->params['davidxu.oauth2.table']) {
-            $this->authCodeScopeTable = Yii::$app->params['davidxu.oauth2.table']['authCodeScopeTable'] ?? $this->authCodeScopeTable;
+        if (isset(Yii::$app->params['davidxu.oauth2.table'])) {
+            self::$authCodeTable = Yii::$app->params['davidxu.oauth2.table']['authAuthCodeTable']
+                ?? self::$authCodeTable;
+            self::$authCodeScopeTable = Yii::$app->params['davidxu.oauth2.table']['authCodeScopeTable']
+                ?? self::$authCodeScopeTable;
         }
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function tableName() {
-        return $this->authCodeTable;
+    public static function tableName(): ?string
+    {
+        return self::$authCodeTable;
     }
 
-    public function behaviors() {
+    public function behaviors(): array
+    {
         return ArrayHelper::merge(parent::behaviors(),[
             TimestampBehavior::class,
         ]);
     }
 
-    public function afterFind()
+    public function afterFind(): void
     {
         foreach($this->relatedScopes as $scope) {
             $this->addScope($scope);
@@ -79,33 +80,37 @@ class AuthCode extends ActiveRecord implements AuthCodeEntityInterface {
      *
      * @param ScopeEntityInterface $scope
      */
-    public function addScope(ScopeEntityInterface $scope)
+    public function addScope(ScopeEntityInterface $scope): void
     {
         $this->scopes[$scope->getIdentifier()] = $scope;
     }
 
     /**
-     * @return \yii\db\ActiveQuery
-     * @throws \yii\base\InvalidConfigException
+     * @return ActiveQuery
+     * @throws InvalidConfigException
      */
-    public function getRelatedScopes() {
-        return $this->hasMany(Scope::class, ['id' => 'scope_id'])->viaTable($this->authCodeScopeTable, ['auth_code_id' => 'id']);
+    public function getRelatedScopes(): ActiveQuery
+    {
+        return $this->hasMany(Scope::class, ['id' => 'scope_id'])
+            ->viaTable(self::$authCodeScopeTable, ['auth_code_id' => 'id']);
     }
 
 
     /**
      * @return array
      */
-    public function getScopes() {
+    public function getScopes(): array
+    {
         return array_keys($this->scopes);
     }
 
     /**
      * Get the token's identifier.
      *
-     * @return string
+     * @return string|int
      */
-    public function getIdentifier() {
+    public function getIdentifier(): string|int
+    {
         return $this->identifier;
     }
 
@@ -114,35 +119,40 @@ class AuthCode extends ActiveRecord implements AuthCodeEntityInterface {
      *
      * @param mixed $identifier
      */
-    public function setIdentifier($identifier) {
+    public function setIdentifier($identifier): void
+    {
         $this->identifier = $identifier;
     }
 
     /**
      * @return string|null
      */
-    public function getRedirectUri() {
+    public function getRedirectUri(): ?string
+    {
         return $this->redirectUri;
     }
 
     /**
      * @param string $uri
      */
-    public function setRedirectUri($uri) {
+    public function setRedirectUri($uri): void
+    {
         $this->redirectUri = $uri;
     }
 
     /**
      * @inheritDoc
      */
-    public function getExpiryDateTime() {
-        return (new \DateTimeImmutable())->setTimestamp($this->expired_at);
+    public function getExpiryDateTime(): DateTimeImmutable
+    {
+        return (new DateTimeImmutable())->setTimestamp($this->expired_at);
     }
 
     /**
      * @inheritDoc
      */
-    public function setExpiryDateTime(\DateTimeImmutable $dateTime) {
+    public function setExpiryDateTime(DateTimeImmutable $dateTime): void
+    {
         $this->expired_at = $dateTime->getTimestamp();
     }
 
@@ -151,7 +161,8 @@ class AuthCode extends ActiveRecord implements AuthCodeEntityInterface {
      *
      * @param string|int|null $identifier The identifier of the user
      */
-    public function setUserIdentifier($identifier) {
+    public function setUserIdentifier($identifier): void
+    {
         $this->user_id = $identifier;
     }
 
@@ -160,7 +171,8 @@ class AuthCode extends ActiveRecord implements AuthCodeEntityInterface {
      *
      * @return string|int|null
      */
-    public function getUserIdentifier() {
+    public function getUserIdentifier(): int|string|null
+    {
         return $this->user_id;
     }
 
@@ -170,28 +182,32 @@ class AuthCode extends ActiveRecord implements AuthCodeEntityInterface {
      *
      * @param ClientEntityInterface $client
      */
-    public function setClient(ClientEntityInterface $client) {
+    public function setClient(ClientEntityInterface $client): void
+    {
         $this->client_id = $client->id;
     }
 
     /**
      * @return Client
      */
-    public function getClient() {
+    public function getClient(): Client
+    {
         return $this->relatedClient;
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getRelatedClient() {
+    public function getRelatedClient(): ActiveQuery
+    {
         return $this->hasOne(Client::class, ['id' => 'client_id']);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules() {
+    public function rules(): array
+    {
         return [
             [['client_id'], 'required'], // identifier
             [['user_id'], 'default'],

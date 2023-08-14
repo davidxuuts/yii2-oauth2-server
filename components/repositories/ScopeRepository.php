@@ -5,19 +5,23 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use davidxu\oauth2\models\Client;
 use davidxu\oauth2\models\Scope;
+use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
+use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
-class ScopeRepository implements \League\OAuth2\Server\Repositories\ScopeRepositoryInterface {
+class ScopeRepository implements ScopeRepositoryInterface {
 
 
     /**
      * Return information about a scope.
      *
-     * @param string $identifier The scope identifier
+     * @param string|int|null $identifier The scope identifier
      *
-     * @return ScopeEntityInterface
+     * @return array|ActiveRecord|null
      */
-    public function getScopeEntityByIdentifier($identifier) {
+    public function getScopeEntityByIdentifier($identifier): array|ActiveRecord|null
+    {
         return Scope::find()->where(['identifier' => $identifier])->one();
     }
 
@@ -31,8 +35,10 @@ class ScopeRepository implements \League\OAuth2\Server\Repositories\ScopeReposit
      * @param null|string $userIdentifier
      *
      * @return ScopeEntityInterface[]
+     * @throws InvalidConfigException
      */
-    public function finalizeScopes(array $scopes, $grantType, ClientEntityInterface $clientEntity, $userIdentifier = null) {
+    public function finalizeScopes(array $scopes, $grantType, ClientEntityInterface $clientEntity, $userIdentifier = null): array
+    {
         $allowedScopes = $clientEntity->getScopes(
             function (ActiveQuery $query) use ($scopes, $grantType, $userIdentifier) {
                 if (empty($scopes)) {
@@ -53,8 +59,6 @@ class ScopeRepository implements \League\OAuth2\Server\Repositories\ScopeReposit
             $allowedScopes->andWhere(['in', 'identifier', $scopes]);
         }
 
-
         return $allowedScopes->all();
-
     }
 }

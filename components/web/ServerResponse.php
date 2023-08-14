@@ -1,21 +1,23 @@
 <?php
 /**
- * A PSR-7 compatible version of a response. Required for the phpleague oauth2 library.
+ * A PSR-7 compatible version of a response. Required for the php league oauth2 library.
  *
- * Based on original by chervand (Source: https://github.com/chervand/yii2-oauth2-server)
  */
 
 namespace davidxu\oauth2\components\web;
 
+use GuzzleHttp\Psr7\Response;
 use Yii;
 use yii\web\HeaderCollection;
 
-class ServerResponse extends \GuzzleHttp\Psr7\Response {
+class ServerResponse extends Response
+{
 
     /**
      * Send this request as a standard Yii2 response
      */
-    public function send() {
+    public function send(): void
+    {
         /** @var HeaderCollection $headers */
         $headers = Yii::$app->response->headers;
         $headers->removeAll();
@@ -29,5 +31,4 @@ class ServerResponse extends \GuzzleHttp\Psr7\Response {
 
         Yii::$app->response->send();
     }
-
 }

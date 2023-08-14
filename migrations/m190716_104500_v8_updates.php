@@ -1,7 +1,6 @@
 <?php
 
 use yii\db\Migration;
-use yii\db\Schema;
 
 /**
  * Class m190716_104500_v8_updates
@@ -9,25 +8,28 @@ use yii\db\Schema;
 class m190716_104500_v8_updates extends Migration
 {
 
-    private ?string $clientTable = '{{%oauth_client}}';
+    private static ?string $clientTable = '{{%oauth_client}}';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         
-        if (Yii::$app->params['davidxu.oauth2.table']) {
-            $this->clientTable = Yii::$app->params['davidxu.oauth2.table']['authClientTable'] ?? $this->clientTable;
+        if (isset(Yii::$app->params['davidxu.oauth2.table'])) {
+            self::$clientTable = Yii::$app->params['davidxu.oauth2.table']['authClientTable']
+                ?? self::$clientTable;
         }
     }
 
-    public function safeUp()
+    public function safeUp(): void
     {
-        $this->addColumn($this->clientTable, 'is_confidential',$this->boolean()->notNull()->defaultValue(1).' AFTER `token_type`');
+        $this->addColumn(self::$clientTable, 'is_confidential',
+            $this->boolean()->notNull()->defaultValue(1).' AFTER `token_type`'
+        );
     }
 
-    public function safeDown()
+    public function safeDown(): void
     {
-        $this->dropColumn($this->clientTable, 'is_confidential');
+        $this->dropColumn(self::$clientTable, 'is_confidential');
     }
 
 }

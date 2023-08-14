@@ -1,9 +1,12 @@
 <?php
 namespace davidxu\oauth2\models;
 
+use Exception;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use Yii;
+use yii\base\InvalidConfigException;
 use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 
@@ -37,30 +40,29 @@ class Client extends ActiveRecord implements ClientEntityInterface {
     const GRANT_TYPE_IMPLICIT = 4;
     const GRANT_TYPE_REFRESH_TOKEN = 5;
 
-    protected ?string $clientTable = '{{%oauth_client}}';
-    protected ?string $clientScopeTable = '{{%oauth_client_scope}}';
+    protected static ?string $clientTable = '{{%oauth_client}}';
+    protected static ?string $clientScopeTable = '{{%oauth_client_scope}}';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
-        if (Yii::$app->params['davidxu.oauth2.table']) {
-            $this->clientTable = Yii::$app->params['davidxu.oauth2.table']['authClientTable'] ?? $this->clientTable;
-        }
-
-        if (Yii::$app->params['davidxu.oauth2.table']) {
-            $this->clientScopeTable = Yii::$app->params['davidxu.oauth2.table']['authClientScopeTable'] ?? $this->clientScopeTable;
+        if (isset(Yii::$app->params['davidxu.oauth2.table'])) {
+            self::$clientTable = Yii::$app->params['davidxu.oauth2.table']['authClientTable']
+                ?? self::$clientTable;
+            self::$clientScopeTable = Yii::$app->params['davidxu.oauth2.table']['authClientScopeTable']
+                ?? self::$clientScopeTable;
         }
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): ?string
     {
-        return $this->clientTable;
+        return self::$clientTable;
     }
 
-    public static function getGrantTypeOptions()
+    public static function getGrantTypeOptions(): array
     {
         return [
             static::GRANT_TYPE_AUTHORIZATION_CODE => 'authorization_code',
@@ -71,6 +73,9 @@ class Client extends ActiveRecord implements ClientEntityInterface {
         ];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getGrantTypeId($grantType, $default = null)
     {
         return ArrayHelper::getValue(array_flip(static::getGrantTypeOptions()), $grantType, $default);
@@ -79,7 +84,8 @@ class Client extends ActiveRecord implements ClientEntityInterface {
     /**
     * @inheritdoc
     */
-    public function behaviors() {
+    public function behaviors(): array
+    {
         return [
             TimestampBehavior::class,
         ];
@@ -88,9 +94,10 @@ class Client extends ActiveRecord implements ClientEntityInterface {
     /**
      * Get the client's identifier.
      *
-     * @return string
+     * @return string|int|object
      */
-    public function getIdentifier() {
+    public function getIdentifier(): string|int|object
+    {
         return $this->identifier;
     }
 
@@ -99,7 +106,8 @@ class Client extends ActiveRecord implements ClientEntityInterface {
      *
      * @return string
      */
-    public function getName() {
+    public function getName(): string
+    {
         return $this->name;
     }
 
@@ -108,9 +116,10 @@ class Client extends ActiveRecord implements ClientEntityInterface {
      *
      * Alternatively return an indexed array of redirect URIs.
      *
-     * @return string|string[]
+     * @return string
      */
-    public function getRedirectUri() {
+    public function getRedirectUri(): string
+    {
         return $this->redirect_uri;
     }
 
@@ -118,16 +127,19 @@ class Client extends ActiveRecord implements ClientEntityInterface {
      * @param $secret
      * @return bool
      */
-    public function validateSecret($secret) {
+    public function validateSecret($secret): bool
+    {
         return password_verify($secret,$this->secret);
     }
 
 
-    public function hashSecret($secret) {
+    public function hashSecret($secret): string
+    {
         return password_hash($secret,PASSWORD_DEFAULT);
     }
 
-    public function attributeLabels() {
+    public function attributeLabels(): array
+    {
         return [
             'identifier' => Yii::t('oauth2','Client ID'),
             'secret' => Yii::t('oauth2','Client secret'),
@@ -140,7 +152,8 @@ class Client extends ActiveRecord implements ClientEntityInterface {
     /**
      * @inheritdoc
      */
-    public function rules() {
+    public function rules(): array
+    {
         return [
             [['identifier','secret','name','redirect_uri'], 'required'],
             [['is_confidential'],'boolean']
@@ -150,7 +163,8 @@ class Client extends ActiveRecord implements ClientEntityInterface {
     /**
      * @inheritdoc
      */
-    public function beforeSave($insert) {
+    public function beforeSave($insert): bool
+    {
         if ($this->isNewRecord) {
             $this->secret = $this->hashSecret($this->secret);
         }
@@ -159,19 +173,19 @@ class Client extends ActiveRecord implements ClientEntityInterface {
 
 
     /**
-     * @inheritdoc
+     * @throws InvalidConfigException
      */
-    public function getScopes(callable $filter)
+    public function getScopes(callable $filter): ActiveQuery
     {
         return $this->hasMany(Scope::class, ['id' => 'scope_id'])
-            ->viaTable($this->clientScopeTable, ['client_id' => 'id'], $filter);
+            ->viaTable(self::$clientScopeTable, ['client_id' => 'id'], $filter);
     }
 
 
     /**
      * @inheritdoc
      */
-    public function isConfidential()
+    public function isConfidential(): bool
     {
         return (bool)$this->is_confidential;
     }

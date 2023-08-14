@@ -5,8 +5,6 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use davidxu\oauth2\components\web\OauthHttpException;
 use davidxu\oauth2\models\AccessToken;
 use davidxu\oauth2\Module;
-use yii\filters\auth\CompositeAuth;
-use yii\filters\Cors;
 use yii\helpers\Json;
 use yii\rest\ActiveController;
 use yii\web\HttpException;
@@ -28,7 +26,8 @@ class TokenController extends ActiveController {
     /**
      * {@inheritdoc}
      */
-    public function actions() {
+    public function actions(): array
+    {
         return [
             'options' => [
                 'class' => 'yii\rest\OptionsAction',
@@ -41,8 +40,8 @@ class TokenController extends ActiveController {
      * @throws HttpException
      * @throws OauthHttpException
      */
-    public function actionCreate() {
-        /** @var Module $module */
+    public function actionCreate(): mixed
+    {
         $module = $this->module;
 
         try {
@@ -57,6 +56,4 @@ class TokenController extends ActiveController {
             throw new HttpException(500, 'Unable to respond to access token request.', 0,YII_DEBUG ? $e : null);
         }
     }
-
-
 }

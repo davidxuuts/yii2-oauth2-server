@@ -13,7 +13,7 @@ class ClientSearch extends Client
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['id', 'token_type', 'grant_type', 'created_at', 'updated_at', 'status'], 'integer'],
@@ -24,7 +24,7 @@ class ClientSearch extends Client
     /**
      * {@inheritdoc}
      */
-    public function scenarios()
+    public function scenarios(): array
     {
         // bypass scenarios() implementation in the parent class
         return Model::scenarios();
@@ -37,7 +37,7 @@ class ClientSearch extends Client
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
+    public function search(array $params = []): ActiveDataProvider
     {
         $query = Client::find();
 
