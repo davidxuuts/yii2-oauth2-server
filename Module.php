@@ -3,6 +3,7 @@
 namespace davidxu\oauth2;
 
 use DateInterval;
+use Exception;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
@@ -37,7 +38,7 @@ class Module extends \yii\base\Module implements BootstrapInterface {
     /**
      * @var string Class to use as UserRepository
      */
-    public string $userRepository;
+    public $userRepository;
 
     /**
      * @var string Alias to the private key file
@@ -126,7 +127,7 @@ class Module extends \yii\base\Module implements BootstrapInterface {
     /**
      * @return null|AuthorizationServer
      * @throws InvalidConfigException
-     * @throws \Exception
+     * @throws Exception
      */
     public function getAuthorizationServer(): ?AuthorizationServer
     {
