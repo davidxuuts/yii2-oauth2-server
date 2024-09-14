@@ -52,7 +52,7 @@ class HttpBearerAuth extends AuthMethod
             $tokenId = $request->getAttribute('oauth_access_token_id');
 
             /** See also \common\models\User::findIdentityByAccessToken  */
-            $identity = $user->loginByAccessToken($tokenId, get_called_class());
+            $identity = $user->loginByAccessToken($tokenId, static::class);
 
             if ($identity === null) {
                 throw OAuthServerException::accessDenied('User not found');

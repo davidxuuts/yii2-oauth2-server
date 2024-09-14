@@ -80,6 +80,6 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     public function isAccessTokenRevoked($tokenId): bool
     {
         $token = AccessToken::find()->where(['identifier'=>$tokenId])->one();
-        return $token === null || $token->status == AccessToken::STATUS_REVOKED;
+        return $token === null || (int)$token->status === AccessToken::STATUS_REVOKED;
     }
 }

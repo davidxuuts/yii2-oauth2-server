@@ -34,7 +34,7 @@ class CheckClientCredentials extends ActionFilter
                 $publicKeyPath
             );
             $request = $module->getRequest();
-            $request = $server->validateAuthenticatedRequest($request);
+            $server->validateAuthenticatedRequest($request);
         } catch (OAuthServerException $e) {
             throw new OAuthHttpException($e);
         } catch (Exception $e) {
